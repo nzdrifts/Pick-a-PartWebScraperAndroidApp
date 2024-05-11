@@ -20,62 +20,45 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
 
 
 public class Main {
-
-    public static String[] getCarsList(){
-        String car = "";
-        ArrayList<String> array = new ArrayList<String>();
-        Scanner scanner = new Scanner(System.in);
-
-        while (!car.equals("done")) {
-            car = scanner.nextLine();
-            array.add(car);
+    public static Elements getLink(String url){
+        try {
+            Document doc = Jsoup.connect(url).get();
+            return doc.select("a[href]");
         }
-        String[] arr = new String[array.size()];
-        arr = array.toArray(arr);
-        return arr;
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
-    private static void lookForCars(String[] carList, String html){
-        Document doc = Jsoup.parse(html);
-        Elements links = doc.select("a[href]");
+
+    private static CarListing lookForCars(String[] carList, Elements links){
 
         for (Element link : links) {
             for (String car : carList) {
                 if (String.valueOf(link).contains(car)) {
-                    //System.out.println(link);
                     CarListing x = new CarListing(String.valueOf(link));
-
-                    System.out.println(x);
+                    return x;
                 }
             }
         }
+        return null;
     }
 
     public static void main(String[] args) throws IOException {
-        String url = "https://www.pickapart.co.nz/Avondale-Stock";
-        URL obj = new URL(url);
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection(); 
-        
-        // optional request header 
-        con.setRequestProperty("User-Agent", "Mozilla/5.0");
-
-        // response code of 200 means connection successful
-        int responseCode = con.getResponseCode(); 
         System.out.println("Enter car models, type \"done\" when finished");
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream())); 
-        String inputLine; 
-        StringBuilder response = new StringBuilder(); 
-        while ((inputLine = in.readLine()) != null) { 
-            response.append(inputLine); 
-        } 
-        in.close(); 
-        String html = response.toString();
+        //set the cars to search for (in future will be input from user)
+        String[] carList = new String[]{"Murano"};
+
+        //get the html of the website as a string (in future should only be done once)
+        //String htmlString = getHTMLString("https://www.pickapart.co.nz/Avondale-Stock");
 
 
-        //get input from user and populate array with car models to search for
-        String[] carArray = getCarsList();
+        Elements links = getLink("https://www.pickapart.co.nz/Avondale-Stock");
 
-        //prints available information on specified cars
-        lookForCars(carArray, html);
+        //lookForCars(carList, links);
+
+        CarListing x = lookForCars(carList, links);
+        System.out.println(x);
     }
 }
